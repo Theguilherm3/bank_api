@@ -13,7 +13,7 @@ class TransactionCreate(BaseModel):
 
 
 class TransactionOut(BaseModel):
-    account_id: str
+    account_number: int
     balance: float
 
 

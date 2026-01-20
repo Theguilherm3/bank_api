@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from db.session import get_db
-from schemas.transactions import TransacionAllOut, TransactionCreate
+from schemas.transactions import TransacionAllOut, TransactionCreate, TransactionOut
 from services.transactions import create_transacion, get_transactions
 
 router = APIRouter()
 
 
-@router.post("/transacao", response_model=TransactionCreate, status_code=200)
+@router.post("/transacao", response_model=TransactionOut, status_code=200)
 def create_new_transaction(payload: TransactionCreate, db=Depends(get_db)):
     return create_transacion(db, payload)
 
