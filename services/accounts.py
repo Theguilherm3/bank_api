@@ -1,12 +1,13 @@
 import random
-from datetime import date
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from models.accounts import Account
-from models.transactions import Transactions
+from models.transactions import EnumMovmentType, EnumPaymentTypes
 from schemas.accounts import AccountCreate
+from schemas.transactions import TransactionCreate
+from services.transactions import create_transacion
 
 
 def get_balance(db: Session, account_number):
@@ -39,18 +40,16 @@ def create_account(db: Session, new_account: AccountCreate):
         username=new_account.username, account_number=random.randint(1000, 9999)
     )
 
-    create_initial_balance = Transactions(
-        movment_type="ENTRADA",
+    create_initial_balance = TransactionCreate(
+        movment_type=EnumMovmentType.ENTRADA,
+        transaction_type=EnumPaymentTypes.P,
         account_id=create_new_account.account_number,
-        transaction_type="P",
         amount=new_account.balance,
-        date=date.today(),
     )
 
     db.add(create_new_account)
-    db.add(create_initial_balance)
     db.commit()
     db.refresh(create_new_account)
-    db.refresh(create_initial_balance)
+    create_transacion(db, create_initial_balance)
 
     return create_new_account
