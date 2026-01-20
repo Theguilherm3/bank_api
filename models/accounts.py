@@ -9,7 +9,8 @@ class Account(Base):
     __tablename__ = "accounts"
     __table_args__ = (
         CheckConstraint(
-            "account_number >= 1000 AND id <= 9999", name="check_account_4_digits"
+            "account_number >= 1000 AND account_number <= 9999",
+            name="check_account_4_digits",
         ),
     )
 
