@@ -14,6 +14,7 @@ API REST para controle simples de contas e transações financeiras (entradas e 
 - Como rodar (desenvolvimento)
 - Banco de dados e migrações (Alembic)
 - Regras de negócio
+- Taxas (transações)
 - Endpoints (com exemplos)
 - Estrutura do projeto
 - Troubleshooting (erros comuns)
@@ -119,6 +120,30 @@ Enum `EnumPaymentTypes`:
 - `C` (CRÉDITO)
 - `D` (DÉBITO)
 
+---
+
+## Taxas (transações)
+
+Ao criar uma transação, o sistema aplica uma taxa dependendo do `transaction_type` (ver `services/taxes.py`). A taxa é **embutida no valor gravado** em `amount`.
+
+Regras atuais:
+
+- `P` (PIX): sem taxa ($\times 1.00$)
+- `D` (DÉBITO): +3% ($\times 1.03$)
+- `C` (CRÉDITO): +5% ($\times 1.05$)
+
+Fórmula:
+
+$$
+amount\_final = amount\_base \times fator(transaction\_type)
+$$
+
+Observações:
+
+- O banco usa `Numeric(12, 2)`, então o valor é armazenado com 2 casas decimais.
+- Como o saldo é calculado pelas transações, o saldo passa a refletir o valor **já com taxa**.
+- A validação de saldo insuficiente compara com o `amount` enviado no payload; se você quiser considerar a taxa no bloqueio de saldo, ajuste a validação para usar o `amount_final`.
+
 ### Saldo
 
 O saldo é calculado a partir das transações:
@@ -210,6 +235,12 @@ Body:
   "account_id": 1234,
   "amount": 129.97
 }
+
+Observação (taxas):
+
+- O `amount` enviado é o valor base.
+- O valor gravado em `amount` pode ser maior por conta da taxa.
+  Ex.: `transaction_type = D` (débito) aplica +3% → $129.97 \times 1.03 \approx 133.87$.
 ```
 
 PowerShell (cURL):
