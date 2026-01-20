@@ -32,9 +32,13 @@ def create_transacion(db: Session, new_transaction: TransactionCreate):
     if not check_account:
         raise HTTPException(status_code=404, detail="Conta não encontrada no sistema")
 
-    elif (
-        check_account.balance < new_transaction.amount
-        and new_transaction.movment_type == EnumMovmentType.SAIDA
+    amount_final = transaction_tax(
+        new_transaction.transaction_type, new_transaction.amount
+    )
+
+    if (
+        new_transaction.movment_type == EnumMovmentType.SAIDA
+        and check_account.balance < amount_final
     ):
         raise HTTPException(status_code=400, detail="Saldo Insuficiente")
 
