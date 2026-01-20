@@ -1,4 +1,4 @@
-# Data Bank API (APLI Dados Financeiros - Casal)
+# Data Bank API
 
 API REST para controle simples de contas e transações financeiras (entradas e saídas), construída com **FastAPI** e **SQLAlchemy**, usando **SQLite** como banco local e **Alembic** para migrações.
 
