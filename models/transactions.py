@@ -12,11 +12,21 @@ class EnumPaymentTypes(str, enum.Enum):
     D = "D"  # DÉBITO
 
 
+class EnumMovmentType(str, enum.Enum):
+    ENTRADA = "ENTRADA"
+    SAIDA = "SAIDA"
+
+
 class Transactions(Base):
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False)
+    movment_type: Mapped[EnumMovmentType] = mapped_column(
+        Enum(EnumMovmentType), nullable=False
+    )
+    account_id: Mapped[int] = mapped_column(
+        ForeignKey("accounts.account_number"), nullable=False
+    )
     transaction_type: Mapped[EnumPaymentTypes] = mapped_column(
         Enum(EnumPaymentTypes), nullable=False
     )

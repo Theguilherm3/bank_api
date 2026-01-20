@@ -1,27 +1,25 @@
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from models.transactions import EnumPaymentTypes
+from models.transactions import EnumMovmentType, EnumPaymentTypes
 
 
 class TransactionCreate(BaseModel):
-    id: str
-    user_id: str
+    movment_type: EnumMovmentType
     transaction_type: EnumPaymentTypes
-    amount: float
-    date: date
+    account_id: int
+    amount: float = Field(gt=0, examples=[129.97])
 
 
 class TransactionOut(BaseModel):
     account_id: str
-    balance: int
+    balance: float
 
 
-class AccountCreate(BaseModel):
-    username: str
-
-
-class AccountOut(BaseModel):
-    account_id: int
-    balance: int
+class TransacionAllOut(BaseModel):
+    id: int
+    movment_type: EnumMovmentType
+    transaction_type: EnumPaymentTypes
+    amount: float
+    date: date

@@ -1,8 +1,8 @@
-"""Criando tabela de usuarios
+"""Migração reescrita
 
-Revision ID: f03ba0380591
+Revision ID: 6d0f504ef52a
 Revises: 
-Create Date: 2026-01-19 20:01:33.001687
+Create Date: 2026-01-20 08:46:52.651929
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f03ba0380591'
+revision: str = '6d0f504ef52a'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,16 +24,18 @@ def upgrade() -> None:
     op.create_table('accounts',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
-    sa.CheckConstraint('id >= 1000 AND id <= 9999', name='check_id_4_digits'),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('account_number', sa.Integer(), nullable=False),
+    sa.CheckConstraint('account_number >= 1000 AND id <= 9999', name='check_account_4_digits'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('account_number')
     )
     op.create_table('transactions',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('account_id', sa.Integer(), nullable=False),
     sa.Column('transaction_type', sa.Enum('P', 'C', 'D', name='enumpaymenttypes'), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['accounts.id'], ),
+    sa.ForeignKeyConstraint(['account_id'], ['accounts.account_number'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_transactions_id'), 'transactions', ['id'], unique=False)
