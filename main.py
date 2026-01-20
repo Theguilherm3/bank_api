@@ -1,4 +1,3 @@
-# to run use: uv run uvicorn main:app
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -16,7 +15,6 @@ async def lifespan(app: FastAPI):
 
     Base.metadata.create_all(bind=engine)
 
-    # aplicacao roda no yield
     yield
 
 
