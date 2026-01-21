@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AccountCreate(BaseModel):
     username: str = "Seu Nome"
-    balance: float = 6025.54
+    balance: float = Field(gt=0, default=5412)
 
 
 class AccountOut(BaseModel):

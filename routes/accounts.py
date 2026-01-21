@@ -8,7 +8,7 @@ from services.accounts import create_account, get_balance
 router = APIRouter()
 
 
-@router.post("/conta/criar", response_model=AccountOut)
+@router.post("/conta/criar", response_model=AccountOut, status_code=200)
 def create_new_account(payload: AccountCreate, db=Depends(get_db)):
     return create_account(db, payload)
 
