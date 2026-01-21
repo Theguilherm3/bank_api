@@ -1,0 +1,29 @@
+name: Bateria de Testes com UV ⚡
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar o UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements.txt"
+
+      - name: Configurar Python 3.13
+        run: uv python install 3.13
+
+      - name: Instalar dependências
+        run: uv sync --all-extras --dev
+
+      - name: Rodar Pytest
+        run: uv run pytest -v
