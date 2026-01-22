@@ -10,6 +10,8 @@ class EnumPaymentTypes(str, enum.Enum):
     P = "P"  # PIX
     C = "C"  # CRÉDITO
     D = "D"  # DÉBITO
+    T = "T"  # TRANSFERENCIA
+    DP = "DP"  # DEPOSITO
 
 
 class EnumMovmentType(str, enum.Enum):

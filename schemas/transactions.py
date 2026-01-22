@@ -23,3 +23,8 @@ class TransacionAllOut(BaseModel):
     transaction_type: EnumPaymentTypes
     amount: float
     date: date
+
+
+class TransferRequest(BaseModel):
+    account_destination: int
+    amount: float = Field(gt=0)
