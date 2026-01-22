@@ -1,16 +1,22 @@
 from pytest import fixture
-from sqlalchemy import create_engine
+from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from db.base import Base
 from db.session import get_db
 from tests.test_main import app
 
-DATABASE_URL = "sqlite:///./test_objectivebank.db"
+DATABASE_URL = "sqlite:///:memory:"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+)
 
 TestSession = sessionmaker(bind=engine)
+
+# StaticPool é importante pro banco de dados se manter o mesmo
+# enquanto a engine estiver ativa, ja que estamos usando memoria
 
 
 @fixture
