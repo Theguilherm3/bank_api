@@ -3,6 +3,7 @@ import random
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
+from core.security import get_password_hash
 from models.accounts import Account
 from models.transactions import EnumMovmentType, EnumPaymentTypes
 from schemas.accounts import AccountCreate
@@ -37,7 +38,9 @@ def create_account(db: Session, new_account: AccountCreate):
         raise HTTPException(status_code=409, detail="Conta com esse nome já existe")
 
     create_new_account = Account(
-        username=new_account.username, account_number=random.randint(1000, 9999)
+        username=new_account.username,
+        account_number=random.randint(1000, 9999),
+        password=get_password_hash(new_account.password),
     )
 
     create_initial_balance = TransactionCreate(
