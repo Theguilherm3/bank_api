@@ -17,6 +17,7 @@ class Account(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False)
     account_number: Mapped[int] = mapped_column(Integer, unique=True)
+    password: Mapped[str] = mapped_column(String(60), nullable=False)
 
     transactions = relationship("Transactions", back_populates="account")
 

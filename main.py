@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from db.base import Base
 from db.session import engine
 from routes.accounts import router as accounts_router
+from routes.login import router as login_router
 from routes.transactions import router as transactions_router
 
 
@@ -28,3 +29,4 @@ def health():
 
 app.include_router(transactions_router, tags=["transactions"])
 app.include_router(accounts_router, tags=["Accounts"])
+app.include_router(login_router, tags=["Login"])

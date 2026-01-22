@@ -1,8 +1,8 @@
-"""Migração reescrita
+"""String 60 password
 
-Revision ID: 6d0f504ef52a
+Revision ID: 90acf570947a
 Revises: 
-Create Date: 2026-01-20 08:46:52.651929
+Create Date: 2026-01-22 09:09:15.806364
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6d0f504ef52a'
+revision: str = '90acf570947a'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,12 +25,14 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
     sa.Column('account_number', sa.Integer(), nullable=False),
-    sa.CheckConstraint('account_number >= 1000 AND id <= 9999', name='check_account_4_digits'),
+    sa.Column('password', sa.String(length=60), nullable=False),
+    sa.CheckConstraint('account_number >= 1000 AND account_number <= 9999', name='check_account_4_digits'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('account_number')
     )
     op.create_table('transactions',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('movment_type', sa.Enum('ENTRADA', 'SAIDA', name='enummovmenttype'), nullable=False),
     sa.Column('account_id', sa.Integer(), nullable=False),
     sa.Column('transaction_type', sa.Enum('P', 'C', 'D', name='enumpaymenttypes'), nullable=False),
     sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
