@@ -2,7 +2,9 @@ import pytest
 from sqlalchemy.orm.session import Session
 
 from schemas.accounts import AccountCreate
+from schemas.transactions import TransferRequest
 from tests.test_main import client
+from tests.utils import create_account, create_account_and_login
 
 # uv run -m pytest -v --cov=routes --cov-report term-missing
 # uv run -m pytest -v -s
@@ -186,3 +188,86 @@ def test_get_balance_valid_account(test_db):
 def test_get_balance_invalid_account(test_db, account_number, status_code):
     response = client.get("/conta", params={"account_number": account_number})
     assert response.status_code == status_code
+
+
+def test_transfer_success(test_db):
+    account_origin = create_account_and_login(client, "Maria", 500, "1234567")
+    account_target = create_account(client, "João", 0.1)
+
+    transfer = TransferRequest(account_destination=account_target, amount=300)
+
+    header = {"Authorization": f"Bearer {account_origin['token']}"}
+
+    print(header)
+
+    response = client.post(
+        "/transacao/transferir", headers=header, json=transfer.model_dump()
+    )
+    assert response.status_code == 200
+
+    check_origin_balance = client.get(
+        "/conta", params={"account_number": account_origin["sub"]}
+    )
+    check_target_balance = client.get(
+        "/conta", params={"account_number": account_target}
+    )
+    assert check_origin_balance.json()["balance"] == 200
+    assert check_target_balance.json()["balance"] == 300.1
+
+
+def test_transfer_inssuficient_balance(test_db):
+    account_origin = create_account_and_login(client, "Maria", 500, "1234567")
+    account_target = create_account(client, "João", 0.1)
+
+    transfer = TransferRequest(account_destination=account_target, amount=501)
+
+    header = {"Authorization": f"Bearer {account_origin['token']}"}
+
+    response = client.post(
+        "/transacao/transferir", headers=header, json=transfer.model_dump()
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Saldo Insuficiente"
+
+    check_origin_balance = client.get(
+        "/conta", params={"account_number": account_origin["sub"]}
+    )
+    check_target_balance = client.get(
+        "/conta", params={"account_number": account_target}
+    )
+    assert check_origin_balance.json()["balance"] == 500
+    assert check_target_balance.json()["balance"] == 0.1
+
+
+def test_transfer_invalid_account(test_db):
+    account_origin = create_account_and_login(client, "Maria", 500, "12345678")
+
+    transfer_request = TransferRequest(
+        account_destination=account_origin["sub"], amount=200
+    )
+
+    transfer_request_invalid_account = TransferRequest(
+        account_destination=3256, amount=200
+    )
+
+    header = {"Authorization": f"Bearer {account_origin['token']}"}
+
+    response = client.post(
+        "/transacao/transferir", headers=header, json=transfer_request.model_dump()
+    )
+    response_2 = client.post(
+        "/transacao/transferir",
+        headers=header,
+        json=transfer_request_invalid_account.model_dump(),
+    )
+
+    check_origin_balance = client.get(
+        "/conta", params={"account_number": account_origin["sub"]}
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Não é possivel transferir para si mesmo"
+    assert check_origin_balance.json()["balance"] == 500
+
+    assert response_2.status_code == 404
+    assert response_2.json()["detail"] == "Conta não existe"

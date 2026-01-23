@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from models.accounts import Account
 from models.transactions import EnumMovmentType, Transactions
-from schemas.transactions import TransactionCreate
+from schemas.transactions import TransactionCreate, TransferRequest
 from services.taxes import transaction_tax
 
 
@@ -57,3 +57,62 @@ def create_transacion(db: Session, new_transaction: TransactionCreate):
     db.refresh(create_new_transacion)
 
     return check_account
+
+
+def transfer_amount(db: Session, current_user: Account, request: TransferRequest):
+    account_numbers: list = [current_user.account_number, request.account_destination]
+
+    if current_user.account_number == request.account_destination:
+        raise HTTPException(
+            status_code=400, detail="Não é possivel transferir para si mesmo"
+        )
+
+    check_accounts = (
+        db.query(Account).filter(Account.account_number.in_(account_numbers)).all()
+    )
+
+    if len(check_accounts) != 2:
+        raise HTTPException(status_code=404, detail="Conta não existe")
+
+    origin_account = next(
+        acc
+        for acc in check_accounts
+        if acc.account_number == current_user.account_number
+    )
+    target_account = next(
+        acc
+        for acc in check_accounts
+        if acc.account_number == request.account_destination
+    )
+
+    if origin_account.balance < request.amount:
+        raise HTTPException(status_code=400, detail="Saldo Insuficiente")
+
+    if request.amount <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Não é possivel fazer transferencias com o valor informado",
+        )
+
+    create_transaction_out = Transactions(
+        movment_type="SAIDA",
+        account_id=origin_account.account_number,
+        transaction_type="T",
+        amount=request.amount,
+        date=date.today(),
+    )
+    create_transacion_in = Transactions(
+        movment_type="ENTRADA",
+        account_id=target_account.account_number,
+        transaction_type="T",
+        amount=request.amount,
+        date=date.today(),
+    )
+    try:
+        db.add(create_transaction_out)
+        db.add(create_transacion_in)
+        db.commit()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Erro ao realizar a transferencia")
+
+    return {"msg": "Transferencia realizada com sucesso!"}
